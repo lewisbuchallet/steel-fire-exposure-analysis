@@ -1,0 +1,47 @@
+&HEAD CHID='compartment1', TITLE='Compartment fire, 4x4x2.4 m room, 1.0x2.0 m door, 0.2 m mesh' /
+
+&MESH IJK=30,35,15, XB=-1.0,5.0,-2.0,5.0,0,3.0 /
+&TIME T_END=2400.0 /
+&DUMP DT_DEVC=1.0, DT_SLCF=2.0 /
+
+&REAC FUEL='PROPANE', SOOT_YIELD=0.01 /
+
+&MATL ID='CONCRETE', CONDUCTIVITY=1.6, SPECIFIC_HEAT=0.88, DENSITY=2300.0 /
+&SURF ID='CONCRETE', MATL_ID='CONCRETE', THICKNESS=0.2, COLOR='GRAY' /
+
+&SURF ID='BURNER', HRRPUA=1500.0, TAU_Q=-150.0, COLOR='RED' /
+
+/ Room: interior x 0-4, y 0-4, z 0-2.4, walls and ceiling 0.2 m thick
+&OBST XB=-0.2,4.2,-0.2,0.0,0,2.6, SURF_ID='CONCRETE' / front wall (door side)
+&OBST XB=-0.2,4.2,4.0,4.2,0,2.6, SURF_ID='CONCRETE' / back wall
+&OBST XB=-0.2,0.0,-0.2,4.2,0,2.6, SURF_ID='CONCRETE' / left wall
+&OBST XB=4.0,4.2,-0.2,4.2,0,2.6, SURF_ID='CONCRETE' / right wall
+&OBST XB=-0.2,4.2,-0.2,4.2,2.4,2.6, SURF_ID='CONCRETE' / ceiling slab
+
+/ Door: 1.0 m wide, 2.0 m high, cut through the front wall
+&HOLE XB=1.4,2.4,-0.3,0.1,0,2.0 /
+
+/ Burner: 0.8 x 0.8 m, about 1 MW at full output, t-squared growth reaching full power at 150 s
+&OBST XB=1.6,2.4,1.6,2.4,0,0.2, SURF_IDS='BURNER','INERT','INERT' /
+
+/ Open boundaries outside the room
+&VENT MB='XMIN', SURF_ID='OPEN' /
+&VENT MB='XMAX', SURF_ID='OPEN' /
+&VENT MB='YMIN', SURF_ID='OPEN' /
+&VENT MB='YMAX', SURF_ID='OPEN' /
+&VENT MB='ZMAX', SURF_ID='OPEN' /
+
+/ Slices through the burner and through the door
+&SLCF PBY=2.0, QUANTITY='TEMPERATURE' /
+&SLCF PBX=1.9, QUANTITY='TEMPERATURE' /
+&SLCF PBY=2.0, QUANTITY='VELOCITY', VECTOR=.TRUE. /
+
+/ Gas temperatures: ceiling above the fire, ceiling away from the fire, and a vertical string
+&DEVC XYZ=2.0,2.0,2.3, QUANTITY='THERMOCOUPLE', ID='TC_ceiling_fire' /
+&DEVC XYZ=3.5,3.5,2.3, QUANTITY='THERMOCOUPLE', ID='TC_ceiling_far' /
+&DEVC XYZ=3.5,3.5,1.9, QUANTITY='THERMOCOUPLE', ID='TC_z1.9' /
+&DEVC XYZ=3.5,3.5,1.5, QUANTITY='THERMOCOUPLE', ID='TC_z1.5' /
+&DEVC XYZ=3.5,3.5,1.1, QUANTITY='THERMOCOUPLE', ID='TC_z1.1' /
+&DEVC XYZ=3.5,3.5,0.5, QUANTITY='THERMOCOUPLE', ID='TC_z0.5' /
+
+&TAIL /

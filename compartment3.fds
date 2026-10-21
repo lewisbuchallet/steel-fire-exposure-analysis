@@ -1,0 +1,65 @@
+&HEAD CHID='compartment3', TITLE='Matched fire: 4x4x2.4 m room, 1.0x2.0 m door, 5 MW peak, 8000 MJ total, 0.2 m mesh' /
+
+/ 0.2 m cells: 30 x 40 x 30 = 36,000 cells. Domain is taller (6 m) and longer in front of the door (3 m)
+/ than compartment1, because the fire is now big enough for flames to spill out of the door.
+&MESH IJK=30,40,30, XB=-1.0,5.0,-3.0,5.0,0,6.0 /
+
+/ 2400 s total: growth to 300 s, steady 5 MW to 1500 s, linear decay to 2100 s, nothing after.
+&TIME T_END=2400.0 /
+&DUMP DT_DEVC=1.0, DT_SLCF=10.0 /
+
+&REAC FUEL='PROPANE', SOOT_YIELD=0.01 /
+
+&MATL ID='CONCRETE', CONDUCTIVITY=1.6, SPECIFIC_HEAT=0.88, DENSITY=2300.0 /
+&SURF ID='CONCRETE', MATL_ID='CONCRETE', THICKNESS=0.2, COLOR='GRAY' /
+
+/ Burner 2 x 2 m at 1250 kW/m2 = 5 MW at full output. Time history set by RAMP 'FIRE' (fraction of full).
+&SURF ID='BURNER', HRRPUA=1250.0, RAMP_Q='FIRE', COLOR='RED' /
+
+/ t-squared growth to 300 s (fractions are (t/300)^2), plateau, linear decay
+&RAMP ID='FIRE', T=0.0, F=0.00 /
+&RAMP ID='FIRE', T=60.0, F=0.04 /
+&RAMP ID='FIRE', T=120.0, F=0.16 /
+&RAMP ID='FIRE', T=180.0, F=0.36 /
+&RAMP ID='FIRE', T=240.0, F=0.64 /
+&RAMP ID='FIRE', T=300.0, F=1.00 /
+&RAMP ID='FIRE', T=1500.0, F=1.00 /
+&RAMP ID='FIRE', T=2100.0, F=0.00 /
+&RAMP ID='FIRE', T=2400.0, F=0.00 /
+
+/ Room: interior x 0-4, y 0-4, z 0-2.4, walls and ceiling 0.2 m thick
+&OBST XB=-0.2,4.2,-0.2,0.0,0,2.6, SURF_ID='CONCRETE' / front wall (door side)
+&OBST XB=-0.2,4.2,4.0,4.2,0,2.6, SURF_ID='CONCRETE' / back wall
+&OBST XB=-0.2,0.0,-0.2,4.2,0,2.6, SURF_ID='CONCRETE' / left wall
+&OBST XB=4.0,4.2,-0.2,4.2,0,2.6, SURF_ID='CONCRETE' / right wall
+&OBST XB=-0.2,4.2,-0.2,4.2,2.4,2.6, SURF_ID='CONCRETE' / ceiling slab
+
+/ Door: 1.0 m wide, 2.0 m high, cut through the front wall
+&HOLE XB=1.4,2.4,-0.3,0.1,0,2.0 /
+
+/ Burner: 2 x 2 m, top at z=0.2
+&OBST XB=1.0,3.0,1.5,3.5,0,0.2, SURF_IDS='BURNER','INERT','INERT' /
+
+/ Open boundaries outside the room
+&VENT MB='XMIN', SURF_ID='OPEN' /
+&VENT MB='XMAX', SURF_ID='OPEN' /
+&VENT MB='YMIN', SURF_ID='OPEN' /
+&VENT MB='YMAX', SURF_ID='OPEN' /
+&VENT MB='ZMAX', SURF_ID='OPEN' /
+
+&SLCF PBY=2.5, QUANTITY='TEMPERATURE' /
+&SLCF PBX=1.9, QUANTITY='TEMPERATURE' /
+
+/ Gas temperatures, same positions as compartment1
+&DEVC XYZ=2.0,2.5,2.3, QUANTITY='THERMOCOUPLE', ID='TC_ceiling_fire' /
+&DEVC XYZ=3.5,3.5,2.3, QUANTITY='THERMOCOUPLE', ID='TC_ceiling_far' /
+&DEVC XYZ=3.5,3.5,1.9, QUANTITY='THERMOCOUPLE', ID='TC_z1.9' /
+&DEVC XYZ=3.5,3.5,1.5, QUANTITY='THERMOCOUPLE', ID='TC_z1.5' /
+&DEVC XYZ=3.5,3.5,1.1, QUANTITY='THERMOCOUPLE', ID='TC_z1.1' /
+&DEVC XYZ=3.5,3.5,0.5, QUANTITY='THERMOCOUPLE', ID='TC_z0.5' /
+
+/ Adiabatic surface temperature facing down (beam soffit). Tested only in compartment2_test.
+&DEVC XYZ=2.0,2.5,2.3, ORIENTATION=0,0,1, QUANTITY='ADIABATIC SURFACE TEMPERATURE GAS', ID='AST_ceiling_fire' /
+&DEVC XYZ=3.5,3.5,2.3, ORIENTATION=0,0,1, QUANTITY='ADIABATIC SURFACE TEMPERATURE GAS', ID='AST_ceiling_far' /
+
+&TAIL /
